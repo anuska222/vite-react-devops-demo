@@ -1,21 +1,22 @@
 # Step 1: Build the Vite app
-FROM node:18 AS build
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
 COPY package*.json ./
 RUN npm install
 
-COPY . .
+COPY . ./
 RUN npm run build
+RUN ls
 
-# Step 2: Serve the app using nginx
+# Step 2: Serve the build using Nginx
 FROM nginx:1.17.1-alpine
 
-# Optional: add a custom nginx config (you can remove this if you don't have nginx.conf)
+# Comment out this line if you don't have nginx.conf
 # COPY nginx.conf /etc/nginx/nginx.conf
 
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
